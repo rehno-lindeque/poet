@@ -16,7 +16,7 @@ module Main( main ) where
 
 {-                                 MODULES                                  -}
 -- OpenSemanticDB
---import OSIX.SemanticDB
+import OSIX.SemanticDB
 
 -- Standard modules
 import Control.Monad
@@ -34,6 +34,7 @@ main = do
 	putStrLn "Translating file: " 
 	fileHandle <- openFile fileName ReadMode
 	fileContents <- hGetContents fileHandle
+	c_semanticDBInit
 	putStr fileContents
 	hClose fileHandle
 
