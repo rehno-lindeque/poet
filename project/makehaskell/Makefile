@@ -4,13 +4,15 @@ TARGET_DIR = ../../bin
 TARGET = ../../bin/poet
 BUILD_BASE_DIR = ../../build
 BUILD_DIR = ../../build/posix-ghc
+OSI_DIR = ../../../../libraries/osi/api
 SRC_DIR = ../../src/haskell
-SRC = ../../src/haskell/*.hs
+SRC = ../../src/haskell/*.hs $(OSI_DIR)/osix/semanticdb/*.hs
+LIBS = ../../../../libraries/osi/implementations/qsemanticdb/lib/libqsemanticdbc.a -lstdc++
 
 all: $(TARGET)
 
 $(TARGET): $(TARGET_DIR) $(BUILD_DIR) $(SRC)
-	ghc --make $(SRC) -o $(TARGET)
+	ghc $(LIBS) --make $(SRC) -o $(TARGET)
 
 $(TARGET_DIR): 
 	mkdir $(TARGET_DIR)

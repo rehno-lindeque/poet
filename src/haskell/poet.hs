@@ -16,6 +16,7 @@ module Main( main ) where
 
 {-                                 MODULES                                  -}
 -- OpenSemanticDB
+--import OSIX.SemanticDB
 
 -- Standard modules
 import Control.Monad
