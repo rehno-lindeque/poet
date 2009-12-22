@@ -7,13 +7,16 @@ BUILD_DIR = ../../build/posix-ghc
 OSI_DIR = ../../../../libraries/osi/api
 SRC_DIR = ../../src/haskell
 SRC = ../../src/haskell/*.hs $(OSI_DIR)/osix/semanticdb/*.hs
+#SRC = ../../src/haskell/*.hs
 LIBS = ../../../../libraries/osi/implementations/qsemanticdb/lib/libqsemanticdbcd.a
+#LIBS = ../../../../libraries/osi/implementations/qsemanticdb/lib/libqsemanticdbc.a
+#LIBS = driver.a
 GHC_FLAGS = -lstdc++
 
 all: $(TARGET)
 
 $(TARGET): $(TARGET_DIR) $(BUILD_DIR) $(SRC) $(LIBS)
-	ghc $(GHC_FLAGS) $(LIBS) --make $(SRC) -o $(TARGET)
+	ghc $(GHC_FLAGS) --make $(SRC) -o $(TARGET) $(LIBS)
 
 $(TARGET_DIR): 
 	mkdir $(TARGET_DIR)
