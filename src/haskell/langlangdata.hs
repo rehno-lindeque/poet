@@ -15,24 +15,29 @@ module LangLang.Data where
 
 {-                                INTERFACE                                 -}
 {- Grammar tokens -}
-data IdDecl = IdDecl String
 
-data Relation = EqId IdDecl 
-              | EqDecl Declaration 
-              | EqSet [Declaration]
+data Relation = EqId   String
+              | EqSet  [Expression]
+              | EqExpr Expression
+              | EqLit  Literal
 
-data Literal = Character Char
+data Literal = LitChar    Char 
+             | LitString  String
+             | LitInt     Int
+             | LitFloat   Float
+             | LitDouble  Double
 
-data Expression = SelectionDisjunct          IdDecl Expression 
-                | SelectionExclusiveDisjunct IdDecl Expression
-                | SelectionConjunct          IdDecl Expression
-                | SelectionStrictConjunct    IdDecl Expression
-                | MutationDisjunct           IdDecl Declaration 
-                | MutationExclusiveDisjunct  IdDecl Declaration
-                | MutationConjunct           IdDecl Declaration
-                | MutationStrictConjunct     IdDecl Declaration
+data QueryExpr = SelectionDisjunct          --Expression
+               | SelectionExclusiveDisjunct --Expression
+               | SelectionConjunct          --IdDecl
+               | SelectionStrictConjunct    --IdDecl
+               | MutationDisjunct           --IdDecl
+               | MutationExclusiveDisjunct  --IdDecl
+               | MutationConjunct           --IdDecl
+               | MutationStrictConjunct     --IdDecl
 
-data Declaration = Atom IdDecl 
-                 | Query Expression 
-                 | Definition IdDecl Relation
+data Expression = Atom        String
+                | Set         [Expression]
+                | Query       Expression    QueryExpr   Expression
+                | Definition  String        Expression
 

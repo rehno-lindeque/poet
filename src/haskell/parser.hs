@@ -10,18 +10,18 @@ module Parser where
 {-                               DOCUMENTATION                              -}
 {-
     USAGE:
-      Parsers are built up using the basic parser functions with the 
+      Parsers are built up using the basic parser functions with the
       following parser combinators:
 
-        ?   Match: Applies a parser to the input if the condition following the combinator holds. 
+        ?   Match: Applies a parser to the input if the condition following the combinator holds.
             (e.g. char ? (== '+'))
 
-        !   Alternative: Tries each of the given parsers in sequence  until one or none succeeds. 
+        !   Alternative: Tries each of the given parsers in sequence  until one or none succeeds.
             (e.g. parserA ! parserB ! parserC)
 
         >-> Transform: Applies a function to the result of the parsing operation.
             (e.g. word >-> convertToInt)
-       
+
         #   Chain combinator: Chain together parsers and their results.
             (e.g. Char 'e' # char 'n' # char 'd')
 
@@ -32,7 +32,7 @@ module Parser where
             (e.g. word #- space #- ')' )
 
         #-  Chain-Hide: Chain together parsers and ignoring results from the following parsers.
-            (e.g. word #- space #- ')' )       
+            (e.g. word #- space #- ')' )
 
         #?  Repeat-Chain: Repeat a parser until the parser following it can be parsed.
             (e.g. (word # ',') #? (word # ')'))
@@ -115,8 +115,21 @@ repeat :: Parser a -> Parser [a]
 oneOrMore :: Parser a -> Parser [a]
 
 -- Iterate the parser a fixed number of times
+iterate :: Parser a -> Int -> Parser [a]
 
 {- Standard parsers -}
+
+-- Match any character
+char :: Parser Char
+
+-- Match a specific character
+matchChar :: Char -> Parser Char
+
+-- Match a specific string
+matchString :: String -> Parser String
+
+-- Match any whitespace character
+space :: Parser Char
 
 {-                              IMPLEMENTATION                              -}
 {- Helper functions -}
@@ -130,6 +143,8 @@ consFirst (a, (as, b)) = (a:as, b)
 returnParser :: a -> Parser a
 returnParser a cs = Just(a,cs)
 
+--failParser :: Parser a
+
 isNewline :: Char -> Bool
 isNewline c = c `elem` ['\n', '\r']
 
@@ -141,7 +156,7 @@ isNewline c = c `elem` ['\n', '\r']
     Just (result, input') -> if (predicate result) then Just (result, input') else Nothing
 
 -- Alternative combinator
-(choiceA ! choiceB) input = 
+(choiceA ! choiceB) input =
   case (choiceA input) of
     Nothing -> choiceB input
     resultA -> resultA
@@ -149,14 +164,14 @@ isNewline c = c `elem` ['\n', '\r']
 -- Transform combinator
 (parser >-> transform) input =
   case (parser input) of
-    Nothing               -> Nothing   
+    Nothing               -> Nothing
     Just (result, input') -> Just (transform result, input')
 
 -- Chain combinator
 (parserA # parserB) input =
   case (parserA input) of
     Nothing                 -> Nothing
-    Just (resultA, input')  -> 
+    Just (resultA, input')  ->
       case parserB input' of
         Nothing                 -> Nothing
         Just (resultB, input'') -> Just((resultA, resultB), input'')
@@ -168,7 +183,7 @@ isNewline c = c `elem` ['\n', '\r']
 (parserA #- parserB) input = (parserA # parserB >-> fst) input
 
 -- Repeat-Chain combinator
-(parserA #? parserB) input = ( (parserB >-> (\b->([],b))) ! ((parserA # (parserA #? parserB)) >-> consFirst) ) input
+(parserA #? parserB) input = ( (parserB >-> (\b-> ([],b))) ! ((parserA # (parserA #? parserB)) >-> consFirst) ) input
 
 -- Hide-Repeat-Chain combinator
 (parserA -#? parserB) input = ((parserA #? parserB) >-> snd) input
@@ -176,49 +191,20 @@ isNewline c = c `elem` ['\n', '\r']
 -- Repeat-Chain-Hide combinator
 (parserA #?- parserB) input = ((parserA #? parserB) >-> fst) input
 
-{- Parser definitions -}
-
---fail :: Parser a
---return :: a -> Parser a
-
-
-
 {- Parser implementation -}
 repeat parser = ( ( parser # (repeat parser) ) >-> cons ) ! (returnParser [])
 
 oneOrMore parser = (parser # (repeat parser)) >-> cons
 
-iterate :: Parser a -> Int -> Parser [a]
 iterate parser 0           = returnParser []
 iterate parser nIterations = parser # iterate parser (nIterations - 1) >-> cons
 
-char :: Parser Char
 char (c:cs) = Just (c, cs)
 char []     = Nothing
 
-matchChar :: Char -> Parser Char
 matchChar c = char ? (==c)
 
-matchString :: String -> Parser String
 matchString string = iterate char (length string) ? (== string)
 
-space :: Parser Char
 space = char ? isSpace
-
-
---word :: Parser String
---word = repeat (char ? isTokenChar)
-
---someFoo :: Char
---someFoo = (liftM2 tokenize) IdRef
-
---identifier []    = Nothing
---identifier input = (liftM (tokenize IdRef)) (getWord ([], input))
-
-
-
---identifier input = do
---  word <- getWord ([], input)
---  return (IdRef (fst word), snd word)
-
 

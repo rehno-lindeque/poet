@@ -5,7 +5,7 @@
 --    Copyright © 2009-2010, Rehno Lindeque. All rights reserved.
 --
 ------------------------------------------------------------------------------
-module LangLang.Parser(parse) where
+module LangLang.Parser(parse, showRemainder) where
 
 {-                               DOCUMENTATION                              -}
 {-
@@ -25,13 +25,13 @@ import Data.Char
 import Control.Monad(liftM)
 
 {-                             PUBLIC INTERFACE                             -}
-parse :: String -> Maybe [Declaration]
+parse :: String -> Maybe [Expression]
 
 
 {-                             PRIVATE INTERFACE                            -}
 -- Tokenizing parsers
 tokenize :: Parser a -> Parser a
-tokenId :: Parser IdDecl
+tokenId :: Parser String
 tokenChar :: Char -> Parser Char
 
 -- LangLang parsers
@@ -39,10 +39,10 @@ comment :: Parser String
 blockcomment :: Parser String
 padding :: Parser [String]
 word :: Parser String
-set :: Parser [Declaration]
-declarationRHS :: Parser Relation
-declaration :: Parser Declaration
-globalDeclaration :: Parser Declaration
+set :: Parser [Expression]
+relationRHS :: Parser Relation
+declaration :: Parser Expression
+globalDeclaration :: Parser Expression
 
 {-                              IMPLEMENTATION                              -}
 
@@ -51,14 +51,16 @@ isTokenChar :: Char -> Bool
 isTokenChar c = (isAlphaNum c) || (c `elem` ['\'', '_', '-'])
 
 --takePair :: (a -> b -> c) -> (a, b) -> c
---takePair func = \(x,y) -> func x y
+--takePair func = \(x,y) -> func x ycd proj
 
 -- Tokenizing parsers
 tokenize parser = parser #- padding
 
 tokenChar c = tokenize $ matchChar c
 
-tokenId = tokenize word >-> IdDecl
+tokenString s = tokenize $ matchString s
+
+tokenId = tokenize word
 
 -- LangLang parsers
 
@@ -66,23 +68,44 @@ comment = matchChar '#' -# Parser.repeat ( char ? (\c -> not $ isNewline c) ) #-
 
 blockcomment = matchString "(#" -# char #?- matchString "#)"
 
-padding = Parser.repeat ((oneOrMore space) ! comment ! blockcomment) 
+padding = Parser.repeat ((oneOrMore space) ! comment ! blockcomment)
 
 word = (oneOrMore (char ? isTokenChar))
 
 set = tokenChar '[' -# (declaration ! tokenId >-> Atom) #?- tokenChar ']'
 
---expression :: Parser Expression
---expression = 
+queryExpr :: Parser QueryExpr
+queryExpr = tokenString ".." -# (returnParser SelectionConjunct)
+          ! tokenString "::" -# (returnParser SelectionStrictConjunct)
+          ! tokenString "~~" -# (returnParser SelectionDisjunct)
+          ! tokenString "!!" -# (returnParser SelectionExclusiveDisjunct)
+          ! tokenChar '.' -# (returnParser SelectionConjunct)
+          ! tokenChar ':' -# (returnParser SelectionStrictConjunct)
+          ! tokenChar '~' -# (returnParser SelectionDisjunct)
+          ! tokenChar '!' -# (returnParser SelectionExclusiveDisjunct)
 
-declarationRHS = declaration >-> EqDecl ! tokenId >-> EqId ! set >-> EqSet
 
-declaration = tokenId #- tokenChar '=' # declarationRHS >-> \(x,y) -> Definition x y
+--relationRHS = declaration >-> EqDecl ! (tokenId # (repeat queryExpr)) >-> (\(x,y) -> EqExpr x y) ! tokenId >-> EqId ! set >-> EqSet
+--relationRHS = (tokenId # (repeat $ queryExpr # tokenId)) >-> (\(x,y,z) -> EqExpr (Query (IdDecl x) y z))) ! tokenId >-> EqId ! set >-> EqSet
+relationRHS = expression >-> EqExpr ! tokenId >-> EqId ! set >-> EqSet
+
+--declaration = tokenId #- tokenChar '=' # relationRHS # expression >-> \(x,y) -> Definition x y
+declaration = expression
+
+subexpression = tokenId >-> Atom ! tokenChar '(' -# expression #- tokenChar ')'
+
+expression :: Parser Expression
+expression = set >-> Set
+           ! tokenId #- tokenChar '=' # expression >-> (\(x,y) -> Definition x y)
+           ! subexpression # queryExpr # expression >-> (\((x,y),z) -> Query x y z)
+           ! subexpression
 
 globalDeclaration = declaration
 
 parse input = fst `liftM` ((padding -# (repeat globalDeclaration)) input)
 
-
-
+showRemainder :: String -> String
+showRemainder input = case snd `liftM` ((padding -# (repeat globalDeclaration)) input) of
+  Nothing   -> "<nothing>"
+  Just(str) -> str
 

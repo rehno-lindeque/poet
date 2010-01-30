@@ -6,9 +6,8 @@
 #
 ##############################################################################
 
-dom = [ foo val ] 
-domfoo = dom.foo
+dom = [ foo.val ]
+(#domfoo = dom.foo
 dom5 = dom:[ foo = 5 ]
-dom5foo = dom5.foo
-
+dom5foo = dom5.foo#)
 

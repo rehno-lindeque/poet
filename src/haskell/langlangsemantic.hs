@@ -27,37 +27,78 @@ import OSIX.SemanticDB
 
 {-                              IMPLEMENTATION                              -}
 
--- Declarations
-declaration :: Declaration -> IO ()
+-- Queries
+query :: (SemanticId -> IO SemanticId) -> Expression -> Expression -> IO SemanticId
+query queryFunction domain argument = do
+  c_BeginQuery
+  domainSymbol   <- (expression domain)
+  argumentSymbol <- (expression argument)
+  querySymbol    <- queryFunction argumentSymbol
+  c_EndQuery
+  return querySymbol
 
-declaration (Definition (IdDecl domain) (EqId (IdDecl codomain))) = do
-  domainSymbol   <- withCString domain c_DeclareOpenDomain
-  codomainSymbol <- withCString codomain c_DeclareSymbol
-  withCString domain c_CloseDomain
+-- Expressions
+expression :: Expression -> IO SemanticId
 
-declaration (Definition (IdDecl domain) (EqDecl codomain)) = do
+expression (Definition domain codomain) = do
+  putStrLn $ "Definition " ++ show domain
   domainSymbol <- withCString domain c_DeclareOpenDomain
-  declaration codomain
+  expression codomain
   withCString domain c_CloseDomain
+  return domainSymbol
 
-declaration (Definition (IdDecl domain) (EqSet codomain)) = do
-  domainSymbol <- withCString domain c_DeclareOpenDomain
-  msum (map declaration codomain)
-  withCString domain c_CloseDomain
-
-declaration (Atom (IdDecl codomain)) = do 
+expression (Atom codomain) = do
+  putStrLn $ "Atom " ++ show codomain
   withCString codomain c_DeclareSymbol
-  return ()
+
+expression (Set []) = return c_SEMANTICID_INVALID
+
+expression (Set codomain) = do
+  putStrLn "Set "
+  sequence (map expression codomain)
+  return c_SEMANTICID_INVALID
+
+expression (Query domain SelectionDisjunct argument) = do
+  putStrLn "SelectionDisjunct "
+  query c_SelectionDisjunct domain argument
+
+expression (Query domain SelectionExclusiveDisjunct argument) = do
+  putStrLn "SelectionExclusiveDisjunct"
+  query c_SelectionExclusiveDisjunct domain argument
+
+expression (Query domain SelectionConjunct argument) = do
+  putStrLn "SelectionConjunct"
+  query c_SelectionConjunct domain argument
+
+expression (Query domain SelectionStrictConjunct argument) = do
+  putStrLn "SelectionStrictConjunct"
+  query c_SelectionStrictConjunct domain argument
+
+expression (Query domain MutationDisjunct argument) = do
+  putStrLn "MutationDisjunct"
+  query c_MutationDisjunct domain argument
+
+expression (Query domain MutationExclusiveDisjunct argument) = do
+  putStrLn "MutationExclusiveDisjunct"
+  query c_MutationExclusiveDisjunct domain argument
+
+expression (Query domain MutationConjunct argument) = do
+  putStrLn "MutationConjunct"
+  query c_MutationConjunct domain argument
+
+expression (Query domain MutationStrictConjunct argument) = do
+  putStrLn "MutationStrictConjunct"
+  query c_MutationStrictConjunct domain argument
 
 -- Semantic analysis
-semanticAnalysis :: Maybe [Declaration] -> IO ()
+semanticAnalysis :: Maybe [Expression] -> IO ()
 semanticAnalysis Nothing              = putStrLn("SemanticAnalysis... Parsing failed.")
 semanticAnalysis (Just [])            = putStrLn("SemanticAnalysis... No declarations in the file.")
 semanticAnalysis (Just declarations)  = do
   semanticDBInit
   putStrLn "SemanticAnalysis..."
   putStrLn ("Number of declarations = " ++ (show $ length declarations))
-  msum (map declaration declarations)
+  sequence (map expression declarations)
   putStrLn "...SemanticAnalysis done"
 
 
