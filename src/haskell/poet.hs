@@ -63,10 +63,26 @@ loadLLFile args = do
   putStrLn ("Translating file '" ++ fileName ++ "'..." )
   (parseLLFile fileName) `catch` (\e -> putStrLn "Error! Could not open file for translation.")
 
+-- Evaluate a LangLang file
+evalLLSymbol :: String -> IO ()
+
+evalLLSymbol symbol = do
+  rootId  <- withCString symbol c_GlobalSymbol
+  evalObj <- c_BeginEvaluation rootId
+  evalLL
+  c_EndEvaluation evalObj
+
+evalLL :: IO SemanticId
+
+evalLL = do
+  resultId <- c_Eval
+  if resultId == c_SEMANTICID_INVALID then return c_SEMANTICID_INVALID else evalLL
+    
 -- The main application entry-point
 main = do
   putStrLn "Welcome to Poet, your friendly semantic translator!"
   args <- getArgs
   putStrLn (show args)
   loadLLFile args
+  evalLLSymbol "test"
 

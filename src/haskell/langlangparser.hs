@@ -75,10 +75,10 @@ word = (oneOrMore (char ? isTokenChar))
 set = tokenChar '[' -# (declaration ! tokenId >-> Atom) #?- tokenChar ']'
 
 queryExpr :: Parser QueryExpr
-queryExpr = tokenString ".." -# (returnParser SelectionConjunct)
-          ! tokenString "::" -# (returnParser SelectionStrictConjunct)
-          ! tokenString "~~" -# (returnParser SelectionDisjunct)
-          ! tokenString "!!" -# (returnParser SelectionExclusiveDisjunct)
+queryExpr = tokenString ".." -# (returnParser MutationConjunct)
+          ! tokenString "::" -# (returnParser MutationStrictConjunct)
+          ! tokenString "~~" -# (returnParser MutationDisjunct)
+          ! tokenString "!!" -# (returnParser MutationExclusiveDisjunct)
           ! tokenChar '.' -# (returnParser SelectionConjunct)
           ! tokenChar ':' -# (returnParser SelectionStrictConjunct)
           ! tokenChar '~' -# (returnParser SelectionDisjunct)
