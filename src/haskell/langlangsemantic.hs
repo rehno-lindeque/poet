@@ -28,14 +28,14 @@ import OSIX.SemanticDB
 {-                              IMPLEMENTATION                              -}
 
 -- Queries
-query :: (SemanticId -> IO SemanticId) -> Expression -> Expression -> IO SemanticId
+query :: IO () -> Expression -> Expression -> IO SemanticId
 query queryFunction domain argument = do
   c_BeginQuery
   domainSymbol   <- (expression domain)
+  queryFunction
   argumentSymbol <- (expression argument)
-  querySymbol    <- queryFunction argumentSymbol
+  --querySymbol    <- argumentSymbol
   c_EndQuery
-  return querySymbol
 
 -- Expressions
 expression :: Expression -> IO SemanticId
