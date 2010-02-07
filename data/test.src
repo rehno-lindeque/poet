@@ -6,8 +6,7 @@
 #
 ##############################################################################
 
-test = [ foo.val ]
-(#domfoo = dom.foo
-dom5 = dom:[ foo = 5 ]
-dom5foo = dom5.foo#)
+val = bar
+foo = val
+test = [ foo:val ]
 
