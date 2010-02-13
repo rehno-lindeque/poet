@@ -6,9 +6,41 @@
 #
 ##############################################################################
 
+#test =
+#[
+#  testA = 
+#  [
+#    a = b
+#    c = b
+#  ]:c
+#
+#  testB = 
+#  [
+#    a = b
+#    c = a
+#    d = c:a
+#  ]:d
+#
+#  testC = 
+#  [
+#    a = b
+#    c = [ d = a d:a ]
+#  ]:c
+#
+#  testD = 
+#  [
+#    a = b
+#    c = a:b
+#    d = c:a
+#  ]:d
+#]
+
 val = bar
+valey = dot
 #foo = val
 #test = [ foo:val ]
 #test = [ foo = val foo:val ]
-test = [ foo:val foo = val ]
+#test = [ foo:val foo = val ]
+foo = val.bar
+test = foo:bar
 
