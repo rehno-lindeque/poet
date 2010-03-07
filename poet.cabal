@@ -1,0 +1,48 @@
+name: poet
+version: 0.1
+cabal-version: -any
+build-type: Simple
+license: AllRightsReserved
+license-file: ""
+copyright:
+maintainer:
+build-depends: base -any, haskell98 -any, mtl -any
+stability:
+homepage: http://www.poetcms.org/
+package-url: http://www.poetcms.org/
+bug-reports:
+synopsis: Poet
+description: Poet CMS
+category:
+author:
+tested-with:
+data-files: ""
+data-dir: ""
+extra-source-files:
+extra-tmp-files:
+ 
+executable: poet
+main-is: Main.hs
+buildable: True
+build-tools:
+cpp-options:
+cc-options:
+ld-options:
+pkgconfig-depends:
+frameworks:
+c-sources:
+extensions: RankNTypes ForeignFunctionInterface
+extra-libraries: qsemanticdbcd stdc++
+extra-lib-dirs: /home/snow/projects/active/development/libraries/osi/implementations/qsemanticdb/lib
+includes:
+install-includes:
+include-dirs:
+hs-source-dirs: src/haskell
+other-modules: Parser LangLang.Data LangLang.Parser
+               LangLang.Semantic LangLang.Debug OSIX.SemanticDB
+ghc-prof-options:
+ghc-shared-options:
+ghc-options:
+hugs-options:
+nhc98-options:
+jhc-options:

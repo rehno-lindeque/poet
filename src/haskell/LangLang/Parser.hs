@@ -40,7 +40,7 @@ blockcomment :: Parser String
 padding :: Parser [String]
 word :: Parser String
 set :: Parser [Expression]
-relationRHS :: Parser Relation
+--relationRHS :: Parser Relation
 declaration :: Parser Expression
 globalDeclaration :: Parser Expression
 
@@ -66,13 +66,13 @@ tokenId = tokenize word
 
 comment = matchChar '#' -# Parser.repeat ( char ? (\c -> not $ isNewline c) ) #- Parser.repeat space
 
-blockcomment = matchString "(#" -# char #?- matchString "#)"
+blockcomment = matchString "(#" -# char ##!- matchString "#)"
 
 padding = Parser.repeat ((oneOrMore space) ! comment ! blockcomment)
 
 word = (oneOrMore (char ? isTokenChar))
 
-set = tokenChar '[' -# (declaration ! tokenId >-> Atom) #?- tokenChar ']'
+set = tokenChar '{' -# (declaration ! tokenId >-> Atom) ##!- tokenChar '}'
 
 queryExpr :: Parser QueryExpr
 queryExpr = tokenString ".." -# (returnParser MutationConjunct)
@@ -84,18 +84,14 @@ queryExpr = tokenString ".." -# (returnParser MutationConjunct)
           ! tokenChar '~' -# (returnParser SelectionDisjunct)
           ! tokenChar '!' -# (returnParser SelectionExclusiveDisjunct)
 
+--relationRHS = expression >-> EqExpr ! tokenId >-> EqId ! (set  >-> EqSet)
 
---relationRHS = declaration >-> EqDecl ! (tokenId # (repeat queryExpr)) >-> (\(x,y) -> EqExpr x y) ! tokenId >-> EqId ! set >-> EqSet
---relationRHS = (tokenId # (repeat $ queryExpr # tokenId)) >-> (\(x,y,z) -> EqExpr (Query (IdDecl x) y z))) ! tokenId >-> EqId ! set >-> EqSet
-relationRHS = expression >-> EqExpr ! tokenId >-> EqId ! set >-> EqSet
-
---declaration = tokenId #- tokenChar '=' # relationRHS # expression >-> \(x,y) -> Definition x y
 declaration = expression
 
 subexpression = tokenId >-> Atom ! tokenChar '(' -# expression #- tokenChar ')'
 
 expression :: Parser Expression
-expression = set >-> Set
+expression = ((set #!>-> (queryExpr # expression)) Set (\(x,(y,z)) -> SetQuery x y z))
            ! tokenId #- tokenChar '=' # expression >-> (\(x,y) -> Definition x y)
            ! subexpression # queryExpr # expression >-> (\((x,y),z) -> Query x y z)
            ! subexpression
@@ -107,5 +103,5 @@ parse input = fst `liftM` ((padding -# (repeat globalDeclaration)) input)
 showRemainder :: String -> String
 showRemainder input = case snd `liftM` ((padding -# (repeat globalDeclaration)) input) of
   Nothing   -> "<nothing>"
-  Just(str) -> str
+  Just str  -> str
 

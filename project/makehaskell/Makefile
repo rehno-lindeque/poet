@@ -1,4 +1,4 @@
-# Copyright (c) 2009, Rehno Lindeque.
+# Copyright (c) 2009-2010, Rehno Lindeque.
 
 TARGET_DIR = ../../bin
 TARGET = ../../bin/poet
@@ -7,11 +7,9 @@ BUILD_DIR = ../../build/posix-ghc
 OSI_DIR = ../../../../libraries/osi/api
 SRC_DIR = ../../src/haskell
 SRC = ../../src/haskell/*.hs $(OSI_DIR)/osix/semanticdb/*.hs
-#SRC = ../../src/haskell/*.hs
 LIBS = ../../../../libraries/osi/implementations/qsemanticdb/lib/libqsemanticdbcd.a
 #LIBS = ../../../../libraries/osi/implementations/qsemanticdb/lib/libqsemanticdbc.a
-#LIBS = driver.a
-GHC_FLAGS = -lstdc++
+GHC_FLAGS = -lstdc++ -XRankNTypes
 
 all: $(TARGET)
 

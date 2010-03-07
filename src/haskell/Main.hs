@@ -34,6 +34,7 @@ import Parser
 import LangLang.Data
 import LangLang.Parser
 import LangLang.Semantic
+import LangLang.Debug
 
 -- OpenSemanticDB
 import OSIX.SemanticDB
@@ -44,7 +45,10 @@ parseLLFile :: String -> IO ()
 parseLLFile fileName = do
   fileHandle <- (openFile fileName ReadMode)
   fileContents <- hGetContents fileHandle
-  (semanticAnalysis $ LangLang.Parser.parse fileContents)
+  case LangLang.Parser.parse fileContents of
+    --Just abstractSyntaxTree -> semanticAnalysis abstractSyntaxTree
+    Just abstractSyntaxTree -> printAST abstractSyntaxTree >> semanticAnalysis abstractSyntaxTree
+    Nothing                 -> putStrLn "Parsing failed!"
   --putStrLn ("Remainder: " ++ (LangLang.Parser.showRemainder fileContents))
   hClose fileHandle
   putStrLn ("...File '" ++ fileName ++ "' closed.\n")
@@ -77,7 +81,7 @@ evalLL :: IO SemanticId
 evalLL = do
   resultId <- c_Eval
   if resultId == c_SEMANTICID_INVALID then return c_SEMANTICID_INVALID else evalLL
-    
+
 -- The main application entry-point
 main = do
   putStrLn "Welcome to Poet, your friendly semantic translator!"
