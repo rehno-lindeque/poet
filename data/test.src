@@ -9,42 +9,56 @@
 #
 ##############################################################################
 
+(# Simple tests
+  val = bar
+  valey = dot
+  #foo = val
+  #test = [ foo:val ]
+  #test = [ foo = val foo:val ]
+  #test = [ foo:val foo = val ]
+  foo = val.bar
+  test = foo:bar
+#)
 
-test =
-{
-  testA = 
+#(# Selection query from an anonymous domains
+  test =
   {
-    a = b
-    c = b
-  }:c
+    testA = 
+    {
+      a = b
+      c = b
+    }:c
 
-  testB = 
-  {
-    a = b
-    c = a
-    d = c:a
-  }:d
+    testB = 
+    {
+      a = b
+      c = a
+      d = c:a
+    }:d
 
-  testC = 
-  {
-    a = b
-    c = { d = a d:a }
-  }:c
+    testC = 
+    {
+      a = b
+      c = { d = a d:a }
+    }:c
 
-  testD = 
-  {
-    a = b
-    c = a:b
-    d = c:a
-  }:d
+    testD = 
+    {
+      a = b
+      c = a:b
+      d = c:a
+    }:d
+  }
+#)
+
+(# Simple mutation of a domain
+
+A = { c d }
+
+test = A::
+{ 
+  c = e 
+  d = f
 }
 
-#val = bar
-#valey = dot
-##foo = val
-##test = [ foo:val ]
-##test = [ foo = val foo:val ]
-##test = [ foo:val foo = val ]
-#foo = val.bar
-#test = foo:bar
-
+#)

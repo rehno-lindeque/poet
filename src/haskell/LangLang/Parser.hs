@@ -88,13 +88,16 @@ queryExpr = tokenString ".." -# (returnParser MutationConjunct)
 
 declaration = expression
 
+subexpression :: Parser Expression
 subexpression = tokenId >-> Atom ! tokenChar '(' -# expression #- tokenChar ')'
 
 expression :: Parser Expression
 expression = ((set #!>-> (queryExpr # expression)) Set (\(x,(y,z)) -> SetQuery x y z))
            ! tokenId #- tokenChar '=' # expression >-> (\(x,y) -> Definition x y)
-           ! subexpression # queryExpr # expression >-> (\((x,y),z) -> Query x y z)
-           ! subexpression
+           ! ((subexpression #!>-> (queryExpr # expression)) id (\(x,(y,z)) -> Query x y z))
+
+--           ! subexpression # queryExpr # expression >-> (\((x,y),z) -> Query x y z)
+--           ! subexpression
 
 globalDeclaration = declaration
 
