@@ -34,12 +34,18 @@ module Parser where
         #-  Chain-Hide: Chain together parsers and ignoring results from the following parsers.
             (e.g. word #- space #- ')' )
 
-        #?  Repeat-Chain: Repeat a parser until the parser following it can be parsed.
+        ##! Repeat-Chain: Repeat a parser until the parser following it can be parsed.
             (e.g. (word # ',') #? (word # ')'))
 
-        -#? Hide-Repeat-Chain:
+        -##! Hide-Repeat-Chain: Hide all output until the second parser is successful.
+            (e.g. )
 
-        #?- Repeat-Chain-Hide:
+        ##!- Repeat-Chain-Hide: Repeat a parser until a hidden parser is recognized.
+            (e.g. )
+
+        #!>-> Chained-Lookahead-Transform: Look ahead using a chained parser to select one of two transform functions. 
+            If the second parser fails then the first transform function is used on the output of the first parser, otherwise the second 
+            transform function is executed on the output of both parsers.
 
     REFERENCES:
 
@@ -74,9 +80,10 @@ infixl 5 >->
 infixl 6 #
 infixl 6 -#
 infixl 6 #-
-infix 7 #?
-infix 7 -#?
-infix 7 #?-
+infix 7 ##!
+infix 7 -##!
+infix 7 ##!-
+infix 7 #!>->
 infix 8 ?
 
 -- Match combinator
@@ -98,13 +105,17 @@ infix 8 ?
 (#-) :: Parser a -> Parser b -> Parser a
 
 -- Repeat-Chain combinator
-(#?) :: Parser a -> Parser b -> Parser ([a],b)
+(##!) :: Parser a -> Parser b -> Parser ([a],b)
 
 -- Hide-Repeat-Chain combinator
-(-#?) :: Parser a -> Parser b -> Parser b
+(-##!) :: Parser a -> Parser b -> Parser b
 
 -- Repeat-Chain-Hide combinator
-(#?-) :: Parser a -> Parser b -> Parser [a]
+(##!-) :: Parser a -> Parser b -> Parser [a]
+
+
+-- Chained-Lookahed-Transform combinator
+(#!>->) :: Parser a -> Parser b -> (a -> c) -> ((a, b) -> c) -> Parser c
 
 {- Parser transformers -}
 
@@ -174,7 +185,7 @@ isNewline c = c `elem` ['\n', '\r']
     Just (resultA, input')  ->
       case parserB input' of
         Nothing                 -> Nothing
-        Just (resultB, input'') -> Just((resultA, resultB), input'')
+        Just (resultB, input'') -> Just ((resultA, resultB), input'')
 
 -- Hide-Chain combinator
 (parserA -# parserB) input = (parserA # parserB >-> snd) input
@@ -183,13 +194,22 @@ isNewline c = c `elem` ['\n', '\r']
 (parserA #- parserB) input = (parserA # parserB >-> fst) input
 
 -- Repeat-Chain combinator
-(parserA #? parserB) input = ( (parserB >-> (\b-> ([],b))) ! ((parserA # (parserA #? parserB)) >-> consFirst) ) input
+(parserA ##! parserB) input = ( (parserB >-> (\b-> ([],b))) ! ((parserA # (parserA ##! parserB)) >-> consFirst) ) input
 
 -- Hide-Repeat-Chain combinator
-(parserA -#? parserB) input = ((parserA #? parserB) >-> snd) input
+(parserA -##! parserB) input = ((parserA ##! parserB) >-> snd) input
 
 -- Repeat-Chain-Hide combinator
-(parserA #?- parserB) input = ((parserA #? parserB) >-> fst) input
+(parserA ##!- parserB) input = ((parserA ##! parserB) >-> fst) input
+
+-- Chained-Lookahed-Transform combinator
+(parserA #!>-> parserB) transformA transformB input = 
+  case parserA input of
+    Nothing                -> Nothing
+    Just (resultA, input') -> 
+      case parserB input' of
+        Nothing                 -> Just (transformA resultA, input')
+        Just (resultB, input'') -> Just (transformB (resultA, resultB), input'')
 
 {- Parser implementation -}
 repeat parser = ( ( parser # (repeat parser) ) >-> cons ) ! (returnParser [])

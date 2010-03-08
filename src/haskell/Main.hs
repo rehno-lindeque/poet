@@ -27,8 +27,8 @@ import Foreign.C.String
 -- Debugging
 --import Debug.Trace
 
--- Poet
-import Parser
+-- Parser
+--import Parser
 
 -- Langlang
 import LangLang.Data
