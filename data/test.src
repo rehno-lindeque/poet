@@ -9,18 +9,42 @@
 #
 ##############################################################################
 
-(# Simple tests
-  val = bar
-  valey = dot
-  #foo = val
-  #test = [ foo:val ]
-  #test = [ foo = val foo:val ]
-  #test = [ foo:val foo = val ]
-  foo = val.bar
-  test = foo:bar
+(# Simple inference
+test = w
+w = x
+x = y
+y = z
+z
 #)
 
-#(# Selection query from an anonymous domains
+(# Simple multi-level query (true assertion)
+test = x:z
+x = y
+y = z
+#)
+
+
+(# Simple multi-level query (false assertion)
+test = x:b
+x = y
+y = z
+a = b
+#)
+
+(# Simple multi-level query (true selection)
+test = x.z
+x = y
+y = z
+#)
+
+#(# Simple multi-level query (false selection)
+test = x.b
+x = y
+y = z
+a = b
+#)
+
+(# Selection query from an anonymous domains
   test =
   {
     testA = 
@@ -53,12 +77,11 @@
 
 (# Simple mutation of a domain
 
-A = { c d }
 
-test = A::
+test = { c d } ::
 { 
   c = e 
-  d = f
+  d = f 
 }
 
 #)
