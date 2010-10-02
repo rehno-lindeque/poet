@@ -1,0 +1,261 @@
+
+
+
+
+/# First example
+
+dom -> { foo val }
+domfoo -> dom.foo
+dom5 -> dom:{ foo -> 5 } 
+
+page -> 
+  "<html><title>A test page</title>
+   <body><p>So yes, this is an html page... yippee!</p></body></html>"
+
+#/# Alternative example
+
+dom = [ foo val ] 
+domfoo = dom.foo
+dom5 = dom:[ foo = 5 ]
+dom5foo = dom5.foo
+dom55 = dom5..5           # Extended select
+
+#/
+/# page
+
+
+page = 
+  "<html><title>A test page</title>
+     <body>
+       <p>So yes, this is an html page... yippee!</p>
+     </body>
+   </html>"
+        
+
+
+#/
+
+/# perhaps
+
+
+dom = { foo val = blah }
+domfoo = dom.foo
+dom5 = dom.{ foo = 5 }
+dom5foo = dom5.foo
+blah6 = { blah = 6 }
+domblah6 = dom..blah6
+domblah = dom..blah
+
+langLangTemplate = 
+{
+  header = 
+  {
+    title = 'LangLang: The universal programming language'
+    meta = 
+    (
+      'programming language' 
+      'web' 
+      'parallel' 
+      'functional'
+      'imperative' 
+    )
+  }
+  body =
+  {
+    mainSections = 
+    (
+      'Introduction' = 'Welcome to the main page of LangLang, the universal programming language.'
+      'About' = 'LangLang was created in 2010 to satisfy the need for a simple but flexible language on the web and for applications.'
+    )
+
+    text = '<h1>\{mainSections~}<h1><p>\{mainSections~.*}</p>'
+  }
+}
+
+htmlDoc = htmlConversion..(poetTemplate.langLangTemplate)
+
+Category theory
+Ex1
+
+a -> b
+c -> { b -> d }
+e -> { b -> f }
+
+a:c = a.(b.d)
+(a:c):e = a.(b.(d.f))
+c:e = b.(d.f)
+a:(c:e) = a.(b.(d.f))
+
+Ex2
+
+a -> b
+c -> { b -> (d -> g) }
+e -> { b -> f }
+
+a:c = a.(b.(d.g))
+(a:c):e = a.( b.( (d.g).f ) )
+c:e = b.( (d.g).f ) 
+a:(c:e) = a.( b.( (d.g).f ) )
+
+Ex3
+
+a -> b
+c -> { b -> (d -> b) }
+e -> { b -> f  d.b -> g }
+
+a:c = a.(b.(d.b))
+(a:c):e = a.( b.(((d.(b.f)).g).f) )
+c:e = b.(((d.(b.f)).g).f)
+a:(c:e) = a.(b.(((d.(b.f)).g).f))
+
+Ex3
+
+a -> b
+c -> { b -> (d -> b) }
+e -> { b -> f  d.b -> g }
+
+a:c = a_(b_(d_b))
+(a:c):e = a_( b_(((d_(b_f))_g)_f) )
+c:e = b.(((d.(b.f)).g).f)
+a:(c:e) = a.(b.(((d.(b.f)).g).f))
+
+####################################
+/# Dependent types
+. is a query
+: is an assertion #/
+
+int:d = 5
+int:d = "Hi?"                   # Type error int:(d->"Hi?") 
+
+s = [ int:a real:(int.b) int.c ]..[ a = 5 b = 3 c = 2 ]
+s = [ int:a int.(real:b) int.c ]..[ a = 5 b = 3.2 c = 2 ]               # Result is s = [ int:(a.5) int.2 ]
+s = [ int:a int.(real:b) int.c ]..[ a = 5 b = "Can I do this?" c = 2 ]  # Type error... real:(b->"Can I do this?")
+
+s = [ int:a int.(real:b) int.c ]::[ a = 5 b = 3 c = 2 ]
+
+s = [ int:a int.(real:b) int.c ]~~[ a = 5 b = 3 c = 2 ]
+
+
+Colour = 
+[ 
+  r g b 
+
+  # Types
+  real::[ r g b ]
+
+  # is the above different from this? I.e. must they be the same?
+  real:r 
+  real:g 
+  real:b
+  
+  # We could alternatively "templatetize" the type like this
+  real: type
+  type: r
+  type: g
+  type: b
+]
+
+h = s~g
+i = [ h:g h:a ]
+
+# NOTE { : :: ~ and ~~ is associative, but . and .. is not. Hence, . and .. are NOT morphisms }
+
+
+##### Doing a proof:
+## Prooving that the sum of two ints is an int (?)
+sum = [ a + b ]
+Int:(sum::[ int:a int:b ])
+
+## Disproving that this calculation returns an int (but rather a real)
+calc = [ a + (b * 0.5) ]
+
+Int:(calc::[ Int:a Int:b ])   # Type error... Int:( Int:a + Real:(Int:b * Real:0.5)
+Real:(calc::[ Int:a Int:b ])  # Correct
+
+# NOTE We can also make certain operations more specific by providing an alias for a proof
+sum = a + b
+intSum = Int:(sum::[ Int:a Int:b ])
+Int:foo = intSum::[ a = 5 b = 3 ]
+
+# NOTE An additional notation for mutation is through "unboxed" queries
+Int:foo = intSum:(a = 5 b = 3)
+
+# An alternative notation is
+a = 5  # to define a->5
+(a.5)! # to assert that 5 does indeed inhabit a
+(a.5)? # to query whether 5 inhabits a
+
+
+#######################
+# Alternative look
+
+s = ( int:a real:(int.b) int.c )..( a = 5 b = 3 c = 2 )
+s = ( int:a int.(real:b) int.c )..( a = 5 b = 3.2 c = 2 )               # Result is s = ( int:(a.5) int.2 )
+s = ( int:a int.(real:b) int.c )..( a = 5 b = "Can I do this?" c = 2 )  # Type error real:(b->"Can I do this?")
+
+s = ( int:a int.(real:b) int.c )::( a = 5 b = 3 c = 2 )
+
+s = ( int:a int.(real:b) int.c )~~( a = 5 b = 3 c = 2 )
+
+{a b c}
+
+
+######################
+# Perhaps instead we should say that an arrow "boxes"
+# the stuff after the arrow
+
+Suppose ! is the unboxing operation
+
+[a b c]! is not a valid operation because it is already "unboxed"
+
+However this is:
+b = [x y z]
+a = !b  # a->[b.x b.y b.z] or a -> b.[x y z]
+a = b  # a -> b -> b.[x y z]
+
+a : b! # assert that the contents of b inhabits a (i.e a -> [b.x b.y b.z])
+a : b # assert that b inhabits a (i.e. a -> b)
+
+a = b
+a! # results in a.b
+a!! # results in a.b.[x y z]
+
+###########################
+# Threading
+Channel.a = ...?
+Channel.b = ...?
+
+d = a! = d # now d is also a channel of a
+e = a!! = a! = b! = e  # now e is also a combined channel that processes a twice in a row then a third time and then b...
+# each a refers to the a closest in its context. I.e. a! = a! will result in something like  a!.a! which is equivalent to a!! (... or that's the idea...)
+
+I.e. 
+
+###########################
+# Consider a console application
+
+> a     # The infinite conglomerate of Epsilon tokens always exist
+a
+> a.b   # a.b does not exist, so no output
+> a:b   # a.b does not exist, so the assertion a:b will cause an error
+Type error a->b
+> c = 5
+> a = c
+> a.c
+a->c
+> a:c
+a->c
+> a.[c]
+a->c 
+> a.c!
+a->c->5
+> a~b
+a->b
+> a.[a~b]   # a.b does not exist, so no output
+> [a~b].b   # b was added to a so a.b exists in this context
+a.b         # (or a.(a.b))
+> a.(c!)    # ... not sure is a.(c!) equivalent to (a.c)!
+......
+> 
+
+#/
