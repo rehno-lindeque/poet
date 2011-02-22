@@ -1,9 +1,15 @@
+POET
+----
+
+Copyright (C) 2010, Rehno Lindeque. All rights reserved.
+
+
 Poet is a small templating language intended to generate html and other text formats. 
 It is also a first basic prototype for the upcoming LangLang programming language.
 
 Poet is currently in an alpha phase and cannot yet be used for much that's usefull.
 
-I've released Poet under a GPL ver 3 while it's int its incubation phase.
+I've released Poet under a GPL ver 3 while it's in its incubation phase.
 In future I intend to relicense the code under a more permissive license such as BSD or MIT.
 If you wish to contribute to the project please contact me at rehno.lindeque (adding @gmail.com to the end).
 
