@@ -1,0 +1,24 @@
+##############################################################################
+#
+#     .GITIGNORE
+#
+#     Copyright (c) 2011 Rehno Lindeque. All rights reserved.
+#
+##############################################################################
+
+# Ignore the distribute directory
+dist/
+
+# Ignore any lib directories
+lib/
+
+# Ignore temporary files
+*~
+*.backup
+
+# Ignore other build files
+Setup.lhs
+
+# Ignore IDE files
+IDE.session
+
